@@ -5,6 +5,32 @@
     <link rel="stylesheet" href="{{ asset('') }}plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="{{ asset('') }}plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     <link rel="stylesheet" href="{{ asset('') }}plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+    <!-- Modal -->
+    <div class="modal fade" id="modalTambahStok" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Tambah Stok
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="form-tambah-stok" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="id_produk" id="id_produk">
+                        <label for=""> Jumlah Stok </label>
+                        <input type="number" name="Stok" id="nilaiTambahStok" class="form-control" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('content')
@@ -36,11 +62,11 @@
                         <h3 class="card-title">{{ $title }}</h3>
                         <a href="{{ route('produk.create') }}" class="btn btn-sm btn-primary float-right">Tambah</a>
                         @if (session()->has('success'))
-                            <div class="alert alert-success" >
+                            <div class="alert alert-success">
                                 {{ session('success') }}
                             </div>
                         @endif
-                            
+
                     </div>
                     <div class="card-body">
                         <table id="example1" class="table table-bordered table-striped">
@@ -61,13 +87,21 @@
                                         <td>{{ rupiah($produk->Harga) }}</td>
                                         <td>{{ $produk->Stok }}</td>
                                         <td>
-                                            <form id="form-delete-produk" action="{{ route('produk.destroy', $produk->id) }}" method="POST">
+                                            <form id="form-delete-produk"
+                                                action="{{ route('produk.destroy', $produk->id) }}" method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <a href="{{ route('produk.edit', $produk->id) }}"
                                                     class="btn btn-sm btn-primary">Edit</a>
                                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                <a href="{{ route('produk.editTambahStok')}}" class="btn btn-sm btn-primary">Stok</a>
+                                                <!-- Button trigger modal -->
+                                                <button type="button" class="btn btn-sm btn-warning" id="btnTambahStok"
+                                                    data-toggle="modal" data-target="#modalTambahStok"
+                                                    data-id_produk="{{ $produk->id }}">
+                                                    Tambah Stok
+                                                </button>
+
+
                                             </form>
                                     </tr>
                                 @endforeach
@@ -124,5 +158,45 @@
                 }
             })
         });
+    </script>
+    <script>
+        $(document).on('click', '#btnTambahStok', function() {
+            let id_produk = $(this).data('id_produk');
+            $('#id_produk').val(id_produk);
+        });
+        $('#form-tambah-stok').submit(function(e) {
+            e.preventDefault();
+            dataForm = $(this).serialize() + "&_token={{ csrf_token() }}";
+            
+            console.log(dataForm);
+            $.ajax({
+                type: "PUT",
+                url: "{{ route('produk.tambahStok', ':id') }}".replace(':id', $('#id_produk').val()),
+                data: dataForm,
+                dataType: "json",
+                success: function(data) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message,
+                        confirmButtonText: 'Ok'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{{ route('produk.index') }}";
+                        }
+                    })
+                    $('#modalTambahStok').modal('hide');
+                    $('#formTambahStok')[0].reset();
+                },
+                error: function(data) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message,
+                        confirmButtonText: 'Ok'
+                    })
+                }
+            })
+        })
     </script>
 @endsection

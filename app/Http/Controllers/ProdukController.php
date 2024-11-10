@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogStok;
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProdukController extends Controller
 {
@@ -37,8 +39,9 @@ class ProdukController extends Controller
             'NamaProduk' => 'required',
             'Harga' => 'required|numeric',
             'Stok' => 'required|numeric',
+            
         ]);
-
+        $validate['Users_id'] = Auth::user()->id;
         $simpan = Produk::create($validate);
         if ($simpan) {
             return response()->json(['status' => 200, 'message' => 'Produk Berhasil Ditambahkan']);
@@ -79,7 +82,7 @@ class ProdukController extends Controller
             'Harga' => 'required|numeric',
             'Stok' => 'required|numeric',
         ]);
-
+        $validate['Users_id'] = Auth::user()->id;
         $simpan = $produk->update($validate);
         if ($simpan) {
             return response()->json(['status' => 200, 'message' => 'Produk Berhasil Diubah']);
@@ -102,10 +105,29 @@ class ProdukController extends Controller
         }
     }
 
-    public function tambahStok($id)
+    public function tambahStok(Request $request, $id)
+    {
+        $validate = $request->validate([
+            'Stok' => 'required|numeric',
+        ]);
+        $produk = Produk::find($id);
+        $produk->Stok += $validate['Stok'];
+        $update = $produk->save();
+        if($update)
+        {
+            return response()->json(['status' => 200, 'message' => 'Stok Berhasil Ditambahkan']);
+        }else{
+            return response()->json(['status' => 500, 'message' => 'Stok Gagal Ditambahkan']);
+        }
+    }
+
+    public function logproduk()
     {
         $title = 'Produk';
-        $subtitle = 'Edit';
-        $produk = Produk::find($id);
+        $subtitle = 'Log Produk';
+        $produks = LogStok::join('produks', 'log_stoks.ProdukId', '=', 'produks.id')
+        ->join('users', 'log_stoks.UsersId', '=', 'users.id')
+        ->select('log_stoks.JumlahProduk', 'log_stoks.created_at', 'produks.NamaProduk', 'users.name')->get();
+        return view('admin.produk.logproduk', compact('title', 'subtitle', 'produks'));
     }
 }
