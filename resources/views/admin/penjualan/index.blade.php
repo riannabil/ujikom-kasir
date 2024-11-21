@@ -60,7 +60,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">{{ $title }}</h3>
-                        <a href="{{ route('produk.create') }}" class="btn btn-sm btn-primary float-right">Tambah</a>
+                        <a href="{{ route('penjualan.create') }}" class="btn btn-sm btn-primary float-right">Tambah</a>
                         @if (session()->has('success'))
                             <div class="alert alert-success">
                                 {{ session('success') }}
@@ -69,48 +69,26 @@
 
                     </div>
                     <div class="card-body">
-                        <button type="button" class="btn btn-primary mb-1" id="btnCetakLabel">Cetak Label</button>
                         <table id="example1" class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th>#</th>
                                     <th>No</th>
-                                    <th>Produk</th>
+                                    <th>Tanggal Penjualan</th>
                                     <th>Harga</th>
-                                    <th>Stok</th>
+                                    <th>Penjual</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($produks as $produk)
+                                @foreach ($penjualans as $penjualan)
                                     <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" name="id_produk[]" type="checkbox" value="{{ $produk->id }}"
-                                                    id="id_produk_label">
-                                            </div>
-                                        </td>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $produk->NamaProduk }}</td>
-                                        <td>{{ rupiah($produk->Harga) }}</td>
-                                        <td>{{ $produk->Stok }}</td>
+                                        <td>{{ $penjualan->TanggalPenjualan }}</td>
+                                        <td>{{ rupiah($produk->TotalHarga) }}</td>
+                                        <td>{{ $penjualan->name }}</td>
                                         <td>
-                                            <form id="form-delete-produk"
-                                                action="{{ route('produk.destroy', $produk->id) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <a href="{{ route('produk.edit', $produk->id) }}"
-                                                    class="btn btn-sm btn-primary">Edit</a>
-                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                <!-- Button trigger modal -->
-                                                <button type="button" class="btn btn-sm btn-warning" id="btnTambahStok"
-                                                    data-toggle="modal" data-target="#modalTambahStok"
-                                                    data-id_produk="{{ $produk->id }}">
-                                                    Tambah Stok
-                                                </button>
-
-
-                                            </form>
+                                            Aksi
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -149,90 +127,5 @@
         });
     </script>
 
-    <script>
-        $("#form-delete-produk").submit(function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Apakah Anda Yakin?',
-                text: "Data tidak akan bisa kembali",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Hapus Data Ini !'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $(this).unbind().submit();
-                }
-            })
-        });
-    </script>
-    <script>
-        $(document).on('click', '#btnTambahStok', function() {
-            let id_produk = $(this).data('id_produk');
-            $('#id_produk').val(id_produk);
-        });
-        $('#form-tambah-stok').submit(function(e) {
-            e.preventDefault();
-            dataForm = $(this).serialize() + "&_token={{ csrf_token() }}";
 
-            console.log(dataForm);
-            $.ajax({
-                type: "PUT",
-                url: "{{ route('produk.tambahStok', ':id') }}".replace(':id', $('#id_produk').val()),
-                data: dataForm,
-                dataType: "json",
-                success: function(data) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: data.message,
-                        confirmButtonText: 'Ok'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = "{{ route('produk.index') }}";
-                        }
-                    })
-                    $('#modalTambahStok').modal('hide');
-                    $('#formTambahStok')[0].reset();
-                },
-                error: function(data) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message,
-                        confirmButtonText: 'Ok'
-                    })
-                }
-            })
-        })
-    </script>
-    <script>
-        $(document).on('click', '#btnCetakLabel', function() {
-            let id_produk = [];
-            $('input[name="id_produk[]"]:checked').each(function() {
-                id_produk.push($(this).val());  
-            });
-            $.ajax({
-                type: "POST",
-                url: "{{ route('produk.cetakLabel') }}",
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    id_produk: id_produk
-                },
-                dataType: "json",
-                success: function(data) {
-                    window.open(data.url, '_blank');
-                },
-                error: function(data) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message,
-                        confirmButtonText: 'Ok'
-                    })
-                }
-            })
-        })
-    </script>
 @endsection

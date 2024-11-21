@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\penjualan;
+use App\Models\Penjualan;
+use App\Models\Produk;
 use Illuminate\Http\Request;
 
 class PenjualanController extends Controller
@@ -12,7 +13,10 @@ class PenjualanController extends Controller
      */
     public function index()
     {
-        //
+        $title = 'Penjualan';
+        $subtitle = 'Index';
+        $penjualans = Penjualan::all();
+        return view('admin.penjualan.index', compact('penjualans', 'title', 'subtitle'));
     }
 
     /**
@@ -20,7 +24,10 @@ class PenjualanController extends Controller
      */
     public function create()
     {
-        //
+        $title = 'Penjualan';
+        $subtitle = 'Create';
+        $produks = Produk::where('Stok', '>', 0)->get();
+        return view('admin.penjualan.create', compact('title', 'subtitle', 'produks'));
     }
 
     /**
@@ -28,7 +35,7 @@ class PenjualanController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request);
     }
 
     /**
