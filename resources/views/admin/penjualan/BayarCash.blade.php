@@ -60,7 +60,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">{{ $title }}</h3>
-                        <a href="{{ route('penjualan.create') }}" class="btn btn-sm btn-primary float-right">Tambah</a>
+                        <a href="{{ route('penjualan.index') }}" class="btn btn-sm btn-warning float-right">Kembali</a>
                         @if (session()->has('success'))
                             <div class="alert alert-success">
                                 {{ session('success') }}
@@ -69,43 +69,44 @@
 
                     </div>
                     <div class="card-body">
-                        <table id="example1" class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Tanggal Penjualan</th>
+                                    <th>Produk</th>
                                     <th>Harga</th>
-                                    <th>Penjual</th>
-                                    <th>Aksi</th>
+                                    <th>Jumlah</th>
+                                    <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($penjualans as $penjualan)
+                                @foreach ($detailpenjualan as $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $penjualan->TanggalPenjualan }}</td>
-                                        <td>{{ rupiah($penjualan->TotalHarga) }}</td>
-                                        <td>{{ $penjualan->name }}</td>
-                                        <td>
-                                            @if ($penjualan->StatusBayar == 'Lunas')
-                                                <a href="{{ route('penjualan.nota', $penjualan->id) }}" class="btn btn-success"  target="_blank">Nota</a>
-                                            @else
-                                            <div class="dropdown">
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                                                    Bayar
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="{{route('penjualan.bayarCash', $penjualan->id)}}">Cash</a>
-                                                    <a class="dropdown-item" href="#">Transfer/Qris</a>
-                                                </div>
-                                                </div>
-                                            @endif
-                                            
-                                        </td>
+                                        <td>{{ $item->NamaProduk}}</td>
+                                        <td>{{ rupiah($item->harga) }}</td>
+                                        <td>{{ $item->JumlahProduk }}</td>
+                                        <td>{{ rupiah($item->SubTotal) }}</td>
                                     </tr>
                                 @endforeach
+
+                                <tr>
+                                    <td colspan="4" align="right">Total Harga</td>
+                                    <td> <input type="text" name="totalHarga" id="totalHarga"
+                                            value="{{ rupiah($penjualan->TotalHarga) }}" readonly class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" align="right">Jumlah Bayar</td>
+                                    <td><input type="number" class="form-control name="JumlahBayar" id="JumlahBayar"></td>
+                                </tr>
+                                <tr>
+                                <td colspan="4" align="right">Kembalian</td>
+                                <td><input type="number" class="form-control name="Kembalian" id="Kembalian" readonly></td>
+                                </tr>
                             </tbody>
                         </table>
+                        <button type="button" id="btnSimpan" class="btn btn-primary float-right mt-2">Simpan</button>
                     </div>
                 </div>
             </div><!-- /.container-fluid -->
@@ -116,29 +117,45 @@
 @endsection
 
 @section('js')
-    <!-- DataTables  & Plugins -->
-    <script src="{{ asset('') }}plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <script src="{{ asset('') }}plugins/jszip/jszip.min.js"></script>
-    <script src="{{ asset('') }}plugins/pdfmake/pdfmake.min.js"></script>
-    <script src="{{ asset('') }}plugins/pdfmake/vfs_fonts.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-buttons/js/buttons.html5.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-buttons/js/buttons.print.min.js"></script>
-    <script src="{{ asset('') }}plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
     <script>
-        $(function() {
-            $("#example1").DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-        });
+        $(document).ready(function() {
+            $('#JumlahBayar').on('input', function() {
+                var totalHarga = $('#totalHarga').val();
+
+                var totalHarga = totalHarga.replace(/[^0-9,]/g, '').replace(",", ".");
+                console.log(totalHarga);
+                var JumlahBayar = $(this).val();
+                var Kembalian = JumlahBayar - totalHarga;
+                $('#Kembalian').val(Kembalian);
+            })
+        })
     </script>
-
-
+    <script>
+        $(document).ready(function() {
+                    $('#btnSimpan').on('click', function() {
+                            var totalHarga = $('#totalHarga').val();
+                            var totalHarga = totalHarga.replace(/[^0-9,]/g, '').replace(",", ".");
+                            var JumlahBayar = $('#JumlahBayar').val();
+                            var Kembalian = $('#Kembalian').val();
+                            var id = '{{ $penjualan->id }}';
+                            $.ajax({
+                                    type: "POST",
+                                    url: "{{ route('penjualan.bayarCashStore') }}",
+                                    data: {
+                                        _token: "{{ csrf_token() }}",
+                                        totalHarga: totalHarga,
+                                        JumlahBayar: JumlahBayar,
+                                        Kembalian: Kembalian,
+                                        id: id
+                                    },
+                                    success: function(response) {
+                                        window.location.href = "{{ route('penjualan.index') }}";
+                                    },
+                                    error: function(response) {
+                                        console.log(response);
+                                    }
+                                })
+                            })
+                    })
+    </script>
 @endsection
