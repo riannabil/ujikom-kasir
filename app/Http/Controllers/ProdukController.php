@@ -111,10 +111,20 @@ class ProdukController extends Controller
         $validate = $request->validate([
             'Stok' => 'required|numeric',
         ]);
+
         $produk = Produk::find($id);
         $produk->Stok += $validate['Stok'];
         $update = $produk->save();
+
         if ($update) {
+            // Tambahkan ke tabel log_stoks
+            LogStok::create([
+                'ProdukId' => $produk->id,
+                'UsersId' => Auth::id(),
+                'JumlahProduk' => $validate['Stok'],
+                'created_at' => now(), // otomatis diset jika tidak pakai ini juga bisa
+            ]);
+
             return response()->json(['status' => 200, 'message' => 'Stok Berhasil Ditambahkan']);
         } else {
             return response()->json(['status' => 500, 'message' => 'Stok Gagal Ditambahkan']);

@@ -34,7 +34,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">{{ $title }}</h3>
-                        <a href="{{ route('produk.create') }}" class="btn btn-sm btn-primary float-right">Tambah</a>
+                        {{-- <a href="{{ route('produk.create') }}" class="btn btn-sm btn-primary float-right">Tambah</a> --}}
                         @if (session()->has('success'))
                             <div class="alert alert-success">
                                 {{ session('success') }}
@@ -61,7 +61,7 @@
                                         <td>{{ $produk->JumlahProduk }}</td>
                                         <td>{{ $produk->name }}</td>
                                         <td>{{ $produk->created_at->diffForHumans() }}</td>
-                                        
+
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -99,5 +99,4 @@
             }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
         });
     </script>
-
 @endsection

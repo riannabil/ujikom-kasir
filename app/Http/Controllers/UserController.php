@@ -64,6 +64,12 @@ class UserController extends Controller
         //
     }
 
+    public function landing()
+{
+    return view('auth.landing'); // pastikan file blade kamu bernama landing.blade.php di folder resources/views
+}
+
+
     public function login()
     {
         return view('auth.login');

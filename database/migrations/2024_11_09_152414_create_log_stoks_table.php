@@ -20,22 +20,22 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::unprepared('
-            Create Trigger log_stok
-            After Update on produks
-            For Each Row
-            Begin
-                Insert Into log_stoks
-                (ProdukId, JumlahProduk, UsersId, created_at)
-                Values
-                (
-                    New.id,
-                    New.Stok - Old.Stok,
-                    New.Users_id,
-                    Now()
-                );
-            End;
-        ');
+        // DB::unprepared('
+        //     Create Trigger log_stok
+        //     After Update on produks
+        //     For Each Row
+        //     Begin
+        //         Insert Into log_stoks
+        //         (ProdukId, JumlahProduk, UsersId, created_at)
+        //         Values
+        //         (
+        //             New.id,
+        //             New.Stok - Old.Stok,
+        //             New.Users_id,
+        //             Now()
+        //         );
+        //     End;
+        // ');
     }
 
     /**
